@@ -1,4 +1,5 @@
 from __future__ import division
+import numpy as np
 from math import ceil, log, sqrt
 
 from geometry.point import Point2D
@@ -7,25 +8,31 @@ from geometry.point import Point2D
 class ExponentialGrid2D(object):
     def __init__(self, point, error, alpha, beta):
         assert 0 < error <= 1, 'Error rate specified must be greater than 0 and at most 1.'
-        self.alpha = alpha if alpha <= beta else beta
-        self.beta = beta if beta >= alpha else alpha
-        self.error = error
+        self.__alpha = alpha if alpha <= beta else beta
+        self.__beta = beta if beta >= alpha else alpha
+        self.center = point
         self.hcubes = self.__init_hcubes(point)
-        self.grids = self.__init_grids()
+        self.grids = self.__init_grids(error)
+
+    def approximate_point(self, point):
+        assert self.__alpha <= np.linalg.norm(point.v - self.center.v) <= self.__beta, \
+            'Point given falls outside of the grid.'
+
+        # TODO: add index logic
 
     def __init_hcubes(self, point):
         hcubes = list()
 
-        for i in range(0, int(ceil(log(self.beta / self.alpha, 2)))):
-            hcubes.append(HyperCube2D(2 ** (i + 2) * self.alpha, point))
+        for i in range(0, int(ceil(log(self.__beta / self.__alpha, 2)))):
+            hcubes.append(HyperCube2D(2 ** (i + 2) * self.__alpha, point))
 
         return hcubes
 
-    def __init_grids(self):
+    def __init_grids(self, error):
         grids = list()
 
         for hcube in self.hcubes:
-            cell_width = (self.error * hcube.sidelength) / (4 * sqrt(2))
+            cell_width = (error * hcube.sidelength) / (4 * sqrt(2))
             grids.append(Grid2D(hcube, cell_width))
 
         return grids
@@ -66,7 +73,22 @@ class Grid2D(object):
 
     class __GridCell2D(object):
         def __init__(self, sidelength, tl_point):
-            self.tl = tl_point
-            self.tr = Point2D(tl_point.x + sidelength, tl_point.y)
-            self.bl = Point2D(tl_point.x, tl_point.y + sidelength)
-            self.br = Point2D(tl_point.x + sidelength, tl_point.y + sidelength)
+            self.points = [
+                tl_point,
+                Point2D(tl_point.x + sidelength, tl_point.y),
+                Point2D(tl_point.x, tl_point.y + sidelength),
+                Point2D(tl_point.x + sidelength, tl_point.y + sidelength)
+            ]
+
+        def find_closest(self, point):
+            closest = self.points[0]
+            min_dist = np.linalg.norm(point.v - closest.v)
+
+            for p in self.points[1:]:
+                dist = np.linalg.norm(point.v - p.v)
+
+                if dist < min_dist:
+                    closest = p
+                    min_dist - dist
+
+            return closest

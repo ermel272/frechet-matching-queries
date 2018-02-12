@@ -16,7 +16,9 @@ setup(
         'Programming Language :: Python :: 2.7'
     ],
     keywords='',
-    install_requires=[],
+    install_requires=[
+        'numpy==1.13.3'
+    ],
     extras_require={
         'dev': [
             'setuptools==36.2.7',
