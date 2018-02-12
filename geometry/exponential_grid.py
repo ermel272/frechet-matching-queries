@@ -6,6 +6,18 @@ from geometry.point import Point2D
 
 
 class ExponentialGrid2D(object):
+    """
+    Implements the data structure described in Lemma 4.2.3 of
+    Realistic Analysis for Algorithmic Problems on Geographical Data by Anne Driemel.
+
+    The data structure defines an exponential grid centered around a point u and bounded
+    by parameters alpha and beta. It supports the following type of query: Given a point
+    p such that alpha <= ||p - u|| <= beta, we can retrieve in O(1) time a grid point p'
+    such that ||p - p'|| <= (error / 2) * ||p - u||.
+
+    Note that construction of the data structure takes O(error ** -2 * log(beta / alpha)) time.
+    """
+
     def __init__(self, point, error, alpha, beta):
         assert 0 < error <= 1, 'Error rate specified must be greater than 0 and at most 1.'
         self.__alpha = alpha if alpha <= beta else beta
@@ -18,7 +30,13 @@ class ExponentialGrid2D(object):
         assert self.__alpha <= np.linalg.norm(point.v - self.center.v) <= self.__beta, \
             'Point given falls outside of the grid.'
 
-        # TODO: add index logic
+        # Compute index of grid containing the point
+        i = int(max(
+            ceil(log(abs(point.x - self.center.x) / self.__alpha) - 1),
+            ceil(log(abs(point.y - self.center.y) / self.__alpha) - 1)
+        ))
+
+        return self.grids[i].get_cell(point).find_closest(point)
 
     def __init_hcubes(self, point):
         hcubes = list()
@@ -50,7 +68,15 @@ class HyperCube2D(object):
 
 class Grid2D(object):
     def __init__(self, hcube, cell_width):
+        self.cell_width = cell_width
         self.grid = self.__init_grid(hcube, cell_width)
+
+    def get_cell(self, point):
+        return self.grid[
+            int(ceil(point.y / self.cell_width - 1))
+        ][
+            int(ceil(point.x / self.cell_width - 1))
+        ]
 
     @staticmethod
     def __init_grid(hcube, cell_width):
