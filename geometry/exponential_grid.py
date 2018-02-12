@@ -1,12 +1,34 @@
 from __future__ import division
-from math import ceil
+from math import ceil, log, sqrt
 
 from geometry.point import Point2D
 
 
 class ExponentialGrid2D(object):
     def __init__(self, point, error, alpha, beta):
-        pass
+        assert 0 < error <= 1, 'Error rate specified must be greater than 0 and at most 1.'
+        self.alpha = alpha if alpha <= beta else beta
+        self.beta = beta if beta >= alpha else alpha
+        self.error = error
+        self.hcubes = self.__init_hcubes(point)
+        self.grids = self.__init_grids()
+
+    def __init_hcubes(self, point):
+        hcubes = list()
+
+        for i in range(0, int(ceil(log(self.beta / self.alpha, 2)))):
+            hcubes.append(HyperCube2D(2 ** (i + 2) * self.alpha, point))
+
+        return hcubes
+
+    def __init_grids(self):
+        grids = list()
+
+        for hcube in self.hcubes:
+            cell_width = (self.error * hcube.sidelength) / (4 * sqrt(2))
+            grids.append(Grid2D(hcube, cell_width))
+
+        return grids
 
 
 class HyperCube2D(object):
