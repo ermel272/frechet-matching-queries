@@ -9,3 +9,6 @@ class Point2D(object):
             [x],
             [y]
         ])
+
+    def __eq__(self, other):
+        return True if self.x == other.x and self.y == other.y else False
