@@ -6,9 +6,9 @@ def discrete_frechet(p, q):
     Implements the algorithm described in Table 1 of Computing the
     Discrete Frechet Distance by Thomas Eiter and Heikki Mannila.
 
-    Computes the discrete Frechet distance between polygonal curves p and q
-    in O(|p| * |q|) time, where |x| denotes the number of vertices in a
-    polygonal curve.
+    Uses dynamic programming to compute the discrete Frechet distance
+    between polygonal curves p and q in O(|p| * |q|) time, where |x|
+    denotes the number of vertices in a polygonal curve.
     """
     ca = [[-1.0 for _ in range(0, q.size())] for _ in range(0, p.size())]
 

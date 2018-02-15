@@ -10,5 +10,8 @@ class Point2D(object):
             [y]
         ])
 
+    def __str__(self):
+        return '({}, {})'.format(self.x, self.y)
+
     def __eq__(self, other):
         return True if self.x == other.x and self.y == other.y else False

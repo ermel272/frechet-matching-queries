@@ -38,6 +38,11 @@ class ExponentialGrid2D(object):
 
         return self.grids[i].get_cell(point).find_closest(point)
 
+    def points(self):
+        for grid in self.grids:
+            for point in grid.points():
+                yield point
+
     def __init_hcubes(self, point):
         hcubes = list()
 
@@ -77,6 +82,11 @@ class Grid2D(object):
         ][
             int(ceil(point.x / self.cell_width - 1))
         ]
+
+    def points(self):
+        for i in range(0, len(self.grid)):
+            for j in range(0, len(self.grid[i])):
+                yield self.grid[i][j].points
 
     @staticmethod
     def __init_grid(hcube, cell_width):
