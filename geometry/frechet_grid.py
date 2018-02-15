@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 
 from geometry.curve import PolygonalCurve2D
@@ -5,7 +6,7 @@ from geometry.exponential_grid import ExponentialGrid2D
 from geometry.frechet_distance import discrete_frechet
 
 
-class FrechetGrid(object):
+class FrechetGrid2D(object):
     """
     Implements the data structure described in Lemma 4.2.4 of
     Realistic Analysis for Algorithmic Problems on Geographical Data by Anne Driemel.
