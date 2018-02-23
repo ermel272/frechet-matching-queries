@@ -79,13 +79,13 @@ class Tree(object):
     def decompose(self):
         curves = list()
 
-        # Step 1: Compute number of leaves in each subtree
+        # Step 1: Compute size & magnitude of each subtree
         for node in self.post_order_traversal():
             if node.is_leaf():
                 node.size = 1
             else:
                 node.size = sum(n.size for n in node.children())
-            node.ell = int(floor(log(node.size)))
+            node.ell = int(floor(log(node.size, 2)))
 
         # Step 2: Create tree decomposition while performing DFS
         stack = list()
