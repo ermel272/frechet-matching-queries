@@ -6,6 +6,7 @@ from geometry.curve import PolygonalCurve2D
 class Tree(object):
     def __init__(self, root=None):
         self.root = root
+        self.decomposition = None
 
     class Node(object):
         def __init__(self, data, parent=None):
@@ -42,15 +43,16 @@ class Tree(object):
             yield
 
     # noinspection PyUnreachableCode
-    def depth_first_search(self):
-        if not self.root:
+    @staticmethod
+    def depth_first_search(node):
+        if not node:
             return
             yield
 
         stack = list()
         visited = set()
 
-        stack.append(self.root)
+        stack.append(node)
         while len(stack) > 0:
             nxt = stack.pop()
             yield nxt
@@ -62,16 +64,26 @@ class Tree(object):
                     stack.append(future_node)
 
     # noinspection PyUnreachableCode
-    def post_order_traversal(self):
+    @staticmethod
+    def post_order_traversal(node):
         def __iter(n):
             for child in n.children():
                 for i in __iter(child):
                     yield i
             yield n
 
-        if self.root:
-            for node in __iter(self.root):
-                yield node
+        if node:
+            for nd in __iter(node):
+                yield nd
+
+        return
+        yield
+
+    # noinspection PyUnreachableCode
+    def leaves(self, node):
+        for n in self.post_order_traversal(node):
+            if n.is_leaf():
+                yield n
 
         return
         yield
@@ -80,7 +92,7 @@ class Tree(object):
         curves = list()
 
         # Step 1: Compute size & magnitude of each subtree
-        for node in self.post_order_traversal():
+        for node in self.post_order_traversal(self.root):
             if node.is_leaf():
                 node.size = 1
             else:
@@ -89,7 +101,7 @@ class Tree(object):
 
         # Step 2: Create tree decomposition while performing DFS
         stack = list()
-        for node in self.depth_first_search():
+        for node in self.depth_first_search(self.root):
             if node == self.root:
                 continue
             elif len(stack) > 0 and node.ell != stack[-1].ell:
@@ -99,4 +111,5 @@ class Tree(object):
 
             stack.append(node)
 
+        self.decomposition = curves
         return curves
