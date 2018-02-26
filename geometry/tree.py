@@ -150,7 +150,7 @@ class Tree(object):
             return u if u.size >= v.size else v
         elif i != j and k == i:
             return u if u.size >= v_seq[j - 1 - k].parent.size else v
-        elif i != k and k == j:
+        elif i != j and k == j:
             return v if v.size >= u_seq[i - 1 - k].parent.size else u
 
         # k != i and k != j:
