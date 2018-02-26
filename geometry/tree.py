@@ -14,6 +14,7 @@ class Tree(object):
             self.data = data
             self.left_child = None
             self.right_sibling = None
+            self.gpar = None
 
         def is_leaf(self):
             return True if not self.left_child else False
@@ -107,9 +108,51 @@ class Tree(object):
             elif len(stack) > 0 and node.ell != stack[-1].ell:
                 stack.insert(0, stack[0].parent)
                 curves.append(PolygonalCurve2D(stack))
+
+                for n in stack:
+                    n.gpar = stack[0]
+
                 stack = list()
 
             stack.append(node)
 
         self.decomposition = curves
         return curves
+
+    def lowest_common_ancestor(self, u, v):
+        assert u != self.root and v != self.root, 'Input nodes cannot be the root node.'
+        assert u != v, 'Input nodes must be distinct'
+        assert u.gpar and v.gpar, 'Tree must be decomposed prior to computing LCA.'
+
+        def compute_parent_sequence(node):
+            seq = list()
+            seq.append(node)
+            seq.append(node.gpar)
+
+            while seq[-1].parent is not None:
+                seq.append(seq[-1].parent.gpar)
+
+            seq.append(seq[-1])
+
+            return seq
+
+        u_seq = compute_parent_sequence(u)
+        v_seq = compute_parent_sequence(v)
+
+        k = 0
+        while u_seq[-(1 + k)] == v_seq[-(1 + k)]:
+            k += 1
+
+        i = len(u_seq)
+        j = len(v_seq)
+
+        if i == j == k:
+            return u if u.size >= v.size else v
+        elif i != j and k == i:
+            return u if u.size >= v_seq[j - 1 - k].parent.size else v
+        elif i != k and k == j:
+            return v if v.size >= u_seq[i - 1 - k].parent.size else u
+
+        # k != i and k != j:
+        return u_seq[i - 1 - k].parent if u_seq[i - 1 - k].parent.size >= v_seq[j - 1 - k].parent.size \
+            else v_seq[j - 1 - k].parent

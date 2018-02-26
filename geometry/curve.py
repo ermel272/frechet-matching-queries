@@ -44,6 +44,7 @@ class CurveRangeTree2D(Tree):
             self.left = None
             self.right = None
             self.grid = FrechetGrid2D(curve, error)
+            self.gpar = None
 
         def is_leaf(self):
             return True if not (self.left or self.right) else False
