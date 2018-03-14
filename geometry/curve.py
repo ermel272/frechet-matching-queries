@@ -1,8 +1,10 @@
 from __future__ import division
 
+import numpy as np
 from math import floor
 
 from geometry.frechet_grid import FrechetGrid2D
+from geometry.point import Point2D
 from geometry.tree import Tree
 
 
@@ -51,13 +53,39 @@ class PolygonalCurve2D(object):
 
 class Edge2D(PolygonalCurve2D):
     def __init__(self, p1, p2):
+        self.p1 = p1
+        self.p2 = p2
         super(Edge2D, self).__init__([p1, p2])
+
+    def partition(self, d, x_i):
+        assert d > 0, "Distance for line partition must be greater than 0."
+        pi = self.__compute_pi(d)
+
+    def __compute_pi(self, d_t):
+        # https://math.stackexchange.com/questions/175896/finding-a-point-along-a-line-a-certain-distance-away-from-another-point
+        pi = list()
+        pi.append(self.p1)
+
+        d = np.linalg.norm(self.p1.v - self.p2.v)
+        curr_t = t = d_t / d
+
+        while curr_t < 1:
+            pi.append(Point2D(
+                (1 - curr_t) * self.p1.x + (curr_t * self.p2.x),
+                (1 - curr_t) * self.p1.y + (curr_t * self.p2.y)
+            ))
+
+            curr_t += t
+
+        pi.append(self.p2)
+        return pi
 
 
 class CurveRangeTree2D(Tree):
-    def __init__(self, curve, error):
+    def __init__(self, curve, error, delta):
         super(CurveRangeTree2D, self).__init__(self.__build_tree(curve))
         self.__error = error
+        self.__delta = delta
 
     class Node(object):
         def __init__(self, curve, error, parent=None):
@@ -92,6 +120,9 @@ class CurveRangeTree2D(Tree):
 
             return
             yield
+
+    def is_approximate(self, q_edge, x, y, x_edge, y_edge):
+        pass
 
     # noinspection PyUnreachableCode
     def __partition_path(self, x, y, x_edge, y_edge):
@@ -134,6 +165,8 @@ class CurveRangeTree2D(Tree):
                 return
                 yield
 
+        subpaths = list()
+
         if lca.left:
             for node in __walk_left(lca.left, x_edge):
                 if node == x_node:
@@ -142,9 +175,11 @@ class CurveRangeTree2D(Tree):
                         self.__error / 2
                     )
 
-                yield node
+                subpaths.append(node)
 
         if lca.right:
+            right_subpaths = list()
+
             for node in __walk_right(lca.right, y_edge):
                 if node == y_node:
                     node = self.Node(
@@ -152,10 +187,11 @@ class CurveRangeTree2D(Tree):
                         self.__error / 2
                     )
 
-                yield node
+                right_subpaths.append(node)
 
-        return
-        yield
+            subpaths += right_subpaths[::-1]
+
+        return subpaths
 
     def __build_tree(self, curve, parent=None):
         node = self.Node(curve, self.__error / 2, parent)
