@@ -93,14 +93,69 @@ class CurveRangeTree2D(Tree):
             return
             yield
 
+    # noinspection PyUnreachableCode
     def __partition_path(self, x, y, x_edge, y_edge):
+        # Assumes x located on the left side of the path w.r.t. y
         x_node = self.__find_node(self.root, x_edge)
         y_node = self.__find_node(self.root, y_edge)
 
         # Assumes tree has already been decomposed
         lca = self.lowest_common_ancestor(x_node, y_node)
 
-        # TODO: Walk down separate paths, reporting nodes in partition
+        # noinspection PyUnreachableCode
+        def __walk_left(node, edge):
+            if node.is_leaf():
+                yield node
+            elif node.curve.is_in_left_curve(edge):
+                for n in __walk_left(node.left, edge):
+                    yield n
+
+                yield node.right
+            elif node.curve.is_in_right_curve(edge):
+                for n in __walk_left(node.right, edge):
+                    yield n
+            else:
+                return
+                yield
+
+        # noinspection PyUnreachableCode
+        def __walk_right(node, edge):
+            if node.is_leaf():
+                yield node
+            elif node.curve.is_in_left_curve(edge):
+                for n in __walk_right(node.left, edge):
+                    yield n
+            elif node.curve.is_in_right_curve(edge):
+                for n in __walk_right(node.right, edge):
+                    yield n
+
+                yield node.left
+            else:
+                return
+                yield
+
+        if lca.left:
+            for node in __walk_left(lca.left, x_edge):
+                if node == x_node:
+                    node = self.Node(
+                        Edge2D(x, node.curve.get_point(1)),
+                        self.__error / 2
+                    )
+
+                yield node
+
+        if lca.right:
+            for node in __walk_right(lca.right, y_edge):
+                if node == y_node:
+                    node = self.Node(
+                        Edge2D(node.curve.get_point(0), y),
+                        self.__error / 2
+                    )
+
+                yield node
+
+        return
+        yield
 
     def __build_tree(self, curve, parent=None):
         node = self.Node(curve, self.__error / 2, parent)
