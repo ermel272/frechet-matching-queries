@@ -68,7 +68,7 @@ class Edge2D(PolygonalCurve2D):
 
         points = list()
         for point in pi:
-            if np.linalg.norm(point.v - x_i.v) <= (2 * delta):
+            if np.linalg.norm(point.v - x_i.v) <= delta:
                 points.append(point)
 
         return points
@@ -132,7 +132,19 @@ class CurveRangeTree2D(Tree):
             yield
 
     def is_approximate(self, q_edge, x, y, x_edge, y_edge):
-        pass
+        subpaths = self.__partition_path(x, y, x_edge, y_edge)
+        partitions = list()
+
+        for subpath in subpaths[1:]:
+            partitions.append(
+                q_edge.partition(
+                    self.__error * self.__delta / 3,
+                    subpath.curve.get_point(0),
+                    2 * self.__delta
+                )
+            )
+
+        # TODO: Construct the directed acyclic graph
 
     # noinspection PyUnreachableCode
     def __partition_path(self, x, y, x_edge, y_edge):
