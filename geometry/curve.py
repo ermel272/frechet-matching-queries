@@ -1,7 +1,7 @@
 from __future__ import division
 
 import numpy as np
-from math import floor
+from math import floor, sqrt
 
 from geometry.frechet_grid import FrechetGrid2D
 from geometry.point import Point2D
@@ -53,21 +53,31 @@ class PolygonalCurve2D(object):
 
 class Edge2D(PolygonalCurve2D):
     def __init__(self, p1, p2):
+        super(Edge2D, self).__init__([p1, p2])
         self.p1 = p1
         self.p2 = p2
-        super(Edge2D, self).__init__([p1, p2])
 
-    def partition(self, d, x_i):
-        assert d > 0, "Distance for line partition must be greater than 0."
-        pi = self.__compute_pi(d)
+        # Although this is a line segment, define some line properties
+        self.slope = (self.p1.y - self.p2.y) / (self.p1.x - self.p2.x)
+        self.y_int = self.p1.y - (self.slope * self.p1.x)
+        self.d = np.linalg.norm(self.p1.v - self.p2.v)
+
+    def partition(self, d_t, x_i, delta):
+        assert d_t > 0, "Distance for line partition must be greater than 0."
+        pi = self.__compute_pi(d_t)
+
+        points = list()
+        for point in pi:
+            if np.linalg.norm(point.v - x_i.v) <= (2 * delta):
+                points.append(point)
+
+        return points
 
     def __compute_pi(self, d_t):
         # https://math.stackexchange.com/questions/175896/finding-a-point-along-a-line-a-certain-distance-away-from-another-point
         pi = list()
         pi.append(self.p1)
-
-        d = np.linalg.norm(self.p1.v - self.p2.v)
-        curr_t = t = d_t / d
+        curr_t = t = d_t / self.d
 
         while curr_t < 1:
             pi.append(Point2D(
