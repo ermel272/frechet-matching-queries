@@ -1,9 +1,10 @@
 from __future__ import division
 
 import numpy as np
-from math import floor, sqrt
+from math import floor
 
 from geometry.frechet_grid import FrechetGrid2D
+from geometry.graph import DirectedAcyclicGraph
 from geometry.point import Point2D
 from geometry.tree import Tree
 
@@ -54,6 +55,7 @@ class PolygonalCurve2D(object):
 class Edge2D(PolygonalCurve2D):
     def __init__(self, p1, p2):
         super(Edge2D, self).__init__([p1, p2])
+        assert p1 != p2, 'An edge cannot be defined by the same two points'
         self.p1 = p1
         self.p2 = p2
 
@@ -62,10 +64,8 @@ class Edge2D(PolygonalCurve2D):
         self.y_int = self.p1.y - (self.slope * self.p1.x)
         self.d = np.linalg.norm(self.p1.v - self.p2.v)
 
-    def partition(self, d_t, x_i, delta):
-        assert d_t > 0, "Distance for line partition must be greater than 0."
-        pi = self.__compute_pi(d_t)
-
+    @staticmethod
+    def partition(pi, x_i, delta):
         points = list()
         for point in pi:
             if np.linalg.norm(point.v - x_i.v) <= delta:
@@ -73,8 +73,8 @@ class Edge2D(PolygonalCurve2D):
 
         return points
 
-    def __compute_pi(self, d_t):
-        # https://math.stackexchange.com/questions/175896/finding-a-point-along-a-line-a-certain-distance-away-from-another-point
+    def sub_divide(self, d_t):
+        assert d_t > 0, "Distance for line partition must be greater than 0."
         pi = list()
         pi.append(self.p1)
         curr_t = t = d_t / self.d
@@ -132,19 +132,38 @@ class CurveRangeTree2D(Tree):
             yield
 
     def is_approximate(self, q_edge, x, y, x_edge, y_edge):
+        # Step 1: Partition path in O(log n) subpaths
         subpaths = self.__partition_path(x, y, x_edge, y_edge)
-        partitions = list()
 
+        # Step 2: Partition q_edge and compute partitioning point sets
+        partitions = list()
+        pi = q_edge.sub_divide(self.__error * self.__delta / 3)
         for subpath in subpaths[1:]:
             partitions.append(
                 q_edge.partition(
-                    self.__error * self.__delta / 3,
+                    pi,
                     subpath.curve.get_point(0),
                     2 * self.__delta
                 )
             )
 
-        # TODO: Construct the directed acyclic graph
+        # Construct the Directed Acyclic Graph
+        dag = DirectedAcyclicGraph()
+        for i in range(0, len(partitions) - 1):
+            j = i + 1
+
+            for u in partitions[i]:
+                for v in partitions[j]:
+                    if v.is_on_edge(Edge2D(u, q_edge.p2)):
+                        dag.add_edge(u, v, subpaths[i + 1].grid.approximate_frechet(u, v))
+
+        for v in partitions[0]:
+            dag.add_edge(q_edge.p1, v, subpaths[0].grid.approximate_frechet(q_edge.p1, v))
+
+        for u in partitions[len(partitions) - 1]:
+            dag.add_edge(u, q_edge.p2, subpaths[len(partitions) - 1].grid.approximate_frechet(u, q_edge.p2))
+
+        # TODO: Compute bottleneck path
 
     # noinspection PyUnreachableCode
     def __partition_path(self, x, y, x_edge, y_edge):
