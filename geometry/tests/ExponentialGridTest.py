@@ -9,7 +9,7 @@ from geometry.point import Point2D
 
 class TestExponentialGrid(unittest.TestCase):
     def setUp(self):
-        self.error = 0.06
+        self.error = 0.05
 
     def test_approximation(self):
         u = Point2D(0.0, 0.0)
@@ -17,6 +17,7 @@ class TestExponentialGrid(unittest.TestCase):
         p = Point2D(1.0, 18.0)
         p_prime = grid.approximate_point(p)
 
+        # Test for error property
         assert np.linalg.norm(p.v - p_prime.v) <= \
             (self.error / 2) * np.linalg.norm(p.v - u.v)
 

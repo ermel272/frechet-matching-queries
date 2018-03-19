@@ -81,9 +81,9 @@ class Grid2D(object):
 
     def get_cell(self, point):
         return self.grid[
-            int(ceil(abs(self.tl.y - point.y) / self.cell_width))
+            int(ceil(abs(self.tl.y - point.y) / self.cell_width) - 1)
         ][
-            int(ceil(abs(self.tl.x - point.x) / self.cell_width))
+            int(ceil(abs(self.tl.x - point.x) / self.cell_width) - 1)
         ]
 
     def points(self):
