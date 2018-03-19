@@ -163,7 +163,8 @@ class CurveRangeTree2D(Tree):
         for u in partitions[len(partitions) - 1]:
             dag.add_edge(u, q_edge.p2, subpaths[len(partitions) - 1].grid.approximate_frechet(u, q_edge.p2))
 
-        # TODO: Compute bottleneck path
+        delta_prime = dag.bottleneck_path(q_edge.p1, q_edge.p2)
+        return delta_prime <= (1 + self.__error) * self.__delta
 
     # noinspection PyUnreachableCode
     def __partition_path(self, x, y, x_edge, y_edge):
