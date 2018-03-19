@@ -32,9 +32,11 @@ class ExponentialGrid2D(object):
 
         # Compute index of grid containing the point
         i = int(max(
-            ceil(log(abs(point.x - self.center.x) / self.__alpha) - 1),
-            ceil(log(abs(point.y - self.center.y) / self.__alpha) - 1)
+            ceil(log(abs(point.x - self.center.x) / self.__alpha, 2) - 1),
+            ceil(log(abs(point.y - self.center.y) / self.__alpha, 2) - 1)
         ))
+
+        # FIXME: Logarithm error when point.x/y == self.center.x/y
 
         return self.grids[i].get_cell(point).find_closest(point)
 
@@ -73,14 +75,15 @@ class HyperCube2D(object):
 
 class Grid2D(object):
     def __init__(self, hcube, cell_width):
+        self.tl = hcube.tl
         self.cell_width = cell_width
         self.grid = self.__init_grid(hcube, cell_width)
 
     def get_cell(self, point):
         return self.grid[
-            int(ceil(point.y / self.cell_width - 1))
+            int(ceil(abs(self.tl.y - point.y) / self.cell_width))
         ][
-            int(ceil(point.x / self.cell_width - 1))
+            int(ceil(abs(self.tl.x - point.x) / self.cell_width))
         ]
 
     def points(self):
@@ -109,11 +112,15 @@ class Grid2D(object):
 
     class __GridCell2D(object):
         def __init__(self, sidelength, tl_point):
+            self.tl = tl_point
+            self.tr = Point2D(tl_point.x + sidelength, tl_point.y)
+            self.bl = Point2D(tl_point.x, tl_point.y + sidelength)
+            self.br = Point2D(tl_point.x + sidelength, tl_point.y + sidelength)
             self.points = [
-                tl_point,
-                Point2D(tl_point.x + sidelength, tl_point.y),
-                Point2D(tl_point.x, tl_point.y + sidelength),
-                Point2D(tl_point.x + sidelength, tl_point.y + sidelength)
+                self.tl,
+                self.tr,
+                self.bl,
+                self.br
             ]
 
         def find_closest(self, point):
