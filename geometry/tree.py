@@ -1,6 +1,6 @@
 from math import floor, log
 
-from geometry.curve import PolygonalCurve2D
+from geometry.curve import PolygonalCurve2D, CurveRangeTree2D
 
 
 class Tree(object):
@@ -156,3 +156,14 @@ class Tree(object):
         # k != i and k != j:
         return u_seq[i - 1 - k].parent if u_seq[i - 1 - k].parent.size >= v_seq[j - 1 - k].parent.size \
             else v_seq[j - 1 - k].parent
+
+
+class FrechetTree(object):
+    def __init__(self, tree, error, delta):
+        self.__error = error
+        self.__delta = error
+        self.paths = tree.decompose()
+        self.path_trees = list()
+
+        for path in self.paths:
+            self.path_trees.append(CurveRangeTree2D(path, error, delta))
