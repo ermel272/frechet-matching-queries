@@ -14,7 +14,7 @@ class TestExponentialGrid(unittest.TestCase):
     def test_approximation(self):
         u = Point2D(0.0, 0.0)
         grid = ExponentialGrid2D(u, self.error, 1.0, 20.0)
-        p = Point2D(1.0, 18.0)
+        p = Point2D(2.0, 10.0)
         p_prime = grid.approximate_point(p)
 
         # Test for error property

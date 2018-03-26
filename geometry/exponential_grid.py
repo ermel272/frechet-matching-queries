@@ -55,10 +55,12 @@ class ExponentialGrid2D(object):
 
     def __init_grids(self, error):
         grids = list()
+        last_hcube = None
 
         for hcube in self.hcubes:
             cell_width = (error * hcube.sidelength) / (4 * sqrt(2))
-            grids.append(Grid2D(hcube, cell_width))
+            grids.append(Grid2D(hcube, cell_width, last_hcube))
+            last_hcube = hcube
 
         return grids
 
@@ -74,10 +76,10 @@ class HyperCube2D(object):
 
 
 class Grid2D(object):
-    def __init__(self, hcube, cell_width):
+    def __init__(self, hcube, cell_width, last_hcube=None):
         self.tl = hcube.tl
         self.cell_width = cell_width
-        self.grid = self.__init_grid(hcube, cell_width)
+        self.grid = self.__init_grid(hcube, cell_width, last_hcube)
 
     def get_cell(self, point):
         return self.grid[
@@ -89,11 +91,12 @@ class Grid2D(object):
     def points(self):
         for i in range(0, len(self.grid)):
             for j in range(0, len(self.grid[i])):
-                for point in self.grid[i][j].points:
-                    yield point
+                if self.grid[i][j]:
+                    for point in self.grid[i][j].points:
+                        yield point
 
     @staticmethod
-    def __init_grid(hcube, cell_width):
+    def __init_grid(hcube, cell_width, last_hcube):
         grid = list()
 
         num_cells = int(ceil(hcube.sidelength / cell_width))
@@ -104,8 +107,14 @@ class Grid2D(object):
             grid.append(list())
 
             for j in range(0, num_cells):
-                grid[i].append(Grid2D.__GridCell2D(cell_width, last))
-                last = grid[i][j].tr
+                new_cell = Grid2D.__GridCell2D(cell_width, last)
+
+                if last_hcube and new_cell.is_in(last_hcube):
+                    grid[i].append(None)
+                else:
+                    grid[i].append(new_cell)
+
+                last = new_cell.tr
 
             last = grid[i][0].bl
 
@@ -136,3 +145,10 @@ class Grid2D(object):
                     min_dist - dist
 
             return closest
+
+        def is_in(self, hcube):
+            if hcube.tl.x <= self.tl.x <= self.tr.x <= hcube.tr.x and \
+                    hcube.tl.y <= self.tl.y <= self.bl.y <= hcube.bl.y:
+                return True
+
+            return False
