@@ -49,6 +49,21 @@ class PolygonalCurve2D(object):
     def is_in_right_curve(self, edge):
         return self.right_curve().contains(edge)
 
+    def sub_divide(self, d_t):
+        assert d_t > 0, "Distance for line partition must be greater than 0."
+        pi = list()
+        p1 = self.__points[0]
+
+        for point in self.__points[1:]:
+            p2 = point
+            pi += Edge2D(p1, p2).sub_divide(d_t)
+            p1 = p2
+
+        return pi
+
+    def get_steiner_curve(self, d_t):
+        return PolygonalCurve2D(self.sub_divide(d_t))
+
 
 class Edge2D(PolygonalCurve2D):
     def __init__(self, p1, p2):
@@ -88,4 +103,5 @@ class Edge2D(PolygonalCurve2D):
         pi.append(self.p2)
         return pi
 
-
+    def get_steiner_edge(self, d_t):
+        return PolygonalCurve2D(self.sub_divide(d_t))

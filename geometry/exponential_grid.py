@@ -89,7 +89,8 @@ class Grid2D(object):
     def points(self):
         for i in range(0, len(self.grid)):
             for j in range(0, len(self.grid[i])):
-                yield self.grid[i][j].points
+                for point in self.grid[i][j].points:
+                    yield point
 
     @staticmethod
     def __init_grid(hcube, cell_width):
