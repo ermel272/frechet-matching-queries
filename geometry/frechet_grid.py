@@ -35,7 +35,8 @@ class FrechetGrid2D(object):
         assert 0 < error <= 1, 'Error rate specified must be greater than 0 and at most 1.'
         self.__u, self.__v = curve.get_spine()
         self.__steiner_curve = curve.get_steiner_curve(STEINER_SPACING)
-        self.__L = discrete_frechet(Edge2D(self.__u, self.__v).get_steiner_curve(STEINER_SPACING), curve)
+        # self.__L = discrete_frechet(Edge2D(self.__u, self.__v).get_steiner_curve(STEINER_SPACING), curve)
+        self.__L = discrete_frechet(Edge2D(self.__u, self.__v), curve)
         self.__error = error
         self.grid_u = ExponentialGrid2D(self.__u, error, error * self.__L / 2, self.__L / error)
         self.grid_v = ExponentialGrid2D(self.__v, error, error * self.__L / 2, self.__L / error)
@@ -63,6 +64,7 @@ class FrechetGrid2D(object):
 
             for q_prime in self.grid_v.points():
                 distances[str(p_prime)][str(q_prime)] = \
-                    discrete_frechet(Edge2D(p_prime, q_prime).get_steiner_curve(STEINER_SPACING), curve)
+                    discrete_frechet(Edge2D(p_prime, q_prime), curve)
+                    # discrete_frechet(Edge2D(p_prime, q_prime).get_steiner_curve(STEINER_SPACING), curve)
 
         return distances
