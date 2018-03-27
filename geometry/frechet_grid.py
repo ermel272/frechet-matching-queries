@@ -59,12 +59,12 @@ class FrechetGrid2D(object):
     def __init_distances(self, curve):
         distances = dict()
 
-        for p_prime in self.grid_u.points():
+        for p_prime in self.grid_u.points:
             distances[str(p_prime)] = dict()
 
-            for q_prime in self.grid_v.points():
-                distances[str(p_prime)][str(q_prime)] = \
-                    discrete_frechet(Edge2D(p_prime, q_prime), curve)
+            for q_prime in self.grid_v.points:
+                distances[str(p_prime)][str(q_prime)] = None
+                    #discrete_frechet(Edge2D(p_prime, q_prime), curve)
                     # discrete_frechet(Edge2D(p_prime, q_prime).get_steiner_curve(STEINER_SPACING), curve)
 
         return distances

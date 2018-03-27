@@ -24,7 +24,7 @@ class ExponentialGrid2D(object):
         self.__beta = beta if beta >= alpha else alpha
         self.center = point
         self.hcubes = self.__init_hcubes(point)
-        self.grids = self.__init_grids(error)
+        self.grids, self.points = self.__init_grids(error)
 
     def approximate_point(self, point):
         assert self.__alpha <= np.linalg.norm(point.v - self.center.v) <= self.__beta, \
@@ -40,9 +40,9 @@ class ExponentialGrid2D(object):
 
         return self.grids[i].get_cell(point).find_closest(point)
 
-    def points(self):
+    def points_iter(self):
         for grid in self.grids:
-            for point in grid.points():
+            for point in grid.points:
                 yield point
 
     def __init_hcubes(self, point):
@@ -55,14 +55,16 @@ class ExponentialGrid2D(object):
 
     def __init_grids(self, error):
         grids = list()
+        points = list()
         last_hcube = None
 
         for hcube in self.hcubes:
             cell_width = (error * hcube.sidelength) / (4 * sqrt(2))
             grids.append(Grid2D(hcube, cell_width, last_hcube))
+            points += [pt for pt in grids[-1].points]
             last_hcube = hcube
 
-        return grids
+        return grids, np.array(points)
 
 
 class HyperCube2D(object):
@@ -79,7 +81,7 @@ class Grid2D(object):
     def __init__(self, hcube, cell_width, last_hcube=None):
         self.tl = hcube.tl
         self.cell_width = cell_width
-        self.grid = self.__init_grid(hcube, cell_width, last_hcube)
+        self.grid, self.points = self.__init_grid(hcube, cell_width, last_hcube)
 
     def get_cell(self, point):
         return self.grid[
@@ -88,7 +90,7 @@ class Grid2D(object):
             int(ceil(abs(self.tl.x - point.x) / self.cell_width) - 1)
         ]
 
-    def points(self):
+    def points_iter(self):
         for i in range(0, len(self.grid)):
             for j in range(0, len(self.grid[i])):
                 if self.grid[i][j]:
@@ -98,6 +100,7 @@ class Grid2D(object):
     @staticmethod
     def __init_grid(hcube, cell_width, last_hcube):
         grid = list()
+        points = set()
 
         num_cells = int(ceil(hcube.sidelength / cell_width))
         assert num_cells > 0, 'Invalid hypercube side length and grid cell width specified.'
@@ -114,11 +117,17 @@ class Grid2D(object):
                 else:
                     grid[i].append(new_cell)
 
+                    # Add cell points to the grid's point set
+                    points.add(new_cell.tl)
+                    points.add(new_cell.tr)
+                    points.add(new_cell.bl)
+                    points.add(new_cell.br)
+
                 last = new_cell.tr
 
             last = grid[i][0].bl
 
-        return grid
+        return grid, np.array(list(points))
 
     class __GridCell2D(object):
         def __init__(self, sidelength, tl_point):

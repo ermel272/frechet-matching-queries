@@ -13,4 +13,4 @@ class TestFrechetGrid(unittest.TestCase):
             Point2D(-4.0, 4.0),
             Point2D(-2.0, -1.0)
         ])
-        grid = FrechetGrid2D(curve, 0.3)
+        grid = FrechetGrid2D(curve, 0.1)
