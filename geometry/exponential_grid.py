@@ -23,7 +23,6 @@ class ExponentialGrid2D(object):
         self.__alpha = alpha if alpha <= beta else beta
         self.__beta = beta if beta >= alpha else alpha
         self.center = point
-        self.hcubes = self.__init_hcubes(point)
         self.grids, self.points = self.__init_grids(error)
 
     def approximate_point(self, point):
@@ -58,7 +57,8 @@ class ExponentialGrid2D(object):
         points = list()
         last_hcube = None
 
-        for hcube in self.hcubes:
+        hcubes = self.__init_hcubes(self.center)
+        for hcube in hcubes:
             cell_width = (error * hcube.sidelength) / (4 * sqrt(2))
             grids.append(Grid2D(hcube, cell_width, last_hcube))
             points += [pt for pt in grids[-1].points]
