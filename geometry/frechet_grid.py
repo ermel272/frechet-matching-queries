@@ -1,11 +1,10 @@
 from __future__ import division
 import numpy as np
 
+from geometry import STEINER_SPACING
 from geometry.curve import Edge2D
 from geometry.exponential_grid import ExponentialGrid2D
 from geometry.frechet_distance import discrete_frechet
-
-STEINER_SPACING = 4
 
 
 class FrechetGrid2D(object):
@@ -35,14 +34,17 @@ class FrechetGrid2D(object):
         assert 0 < error <= 1, 'Error rate specified must be greater than 0 and at most 1.'
         self.__u, self.__v = curve.get_spine()
         self.__steiner_curve = curve.get_steiner_curve(STEINER_SPACING)
-        # self.__L = discrete_frechet(Edge2D(self.__u, self.__v).get_steiner_curve(STEINER_SPACING), curve)
-        self.__L = discrete_frechet(Edge2D(self.__u, self.__v), curve)
+        self.__L = discrete_frechet(Edge2D(self.__u, self.__v).get_steiner_curve(STEINER_SPACING),
+                                    curve.get_steiner_curve(STEINER_SPACING))
         self.__error = error
         self.grid_u = ExponentialGrid2D(self.__u, error, error * self.__L / 2, self.__L / error)
         self.grid_v = ExponentialGrid2D(self.__v, error, error * self.__L / 2, self.__L / error)
         self.distances = self.__init_distances(curve)
 
-    def approximate_frechet(self, p, q):
+    def approximate_frechet(self, edge):
+        p = edge.p1
+        q = edge.p2
+
         r = max(np.linalg.norm(p.v - self.__u.v), np.linalg.norm(q.v - self.__v.v))
 
         if r <= self.__error * self.__L / 2:
@@ -63,8 +65,8 @@ class FrechetGrid2D(object):
             distances[str(p_prime)] = dict()
 
             for q_prime in self.grid_v.points:
-                distances[str(p_prime)][str(q_prime)] = None
-                    #discrete_frechet(Edge2D(p_prime, q_prime), curve)
-                    # discrete_frechet(Edge2D(p_prime, q_prime).get_steiner_curve(STEINER_SPACING), curve)
+                distances[str(p_prime)][str(q_prime)] = \
+                    discrete_frechet(Edge2D(p_prime, q_prime).get_steiner_curve(STEINER_SPACING),
+                                     curve.get_steiner_curve(STEINER_SPACING))
 
         return distances
