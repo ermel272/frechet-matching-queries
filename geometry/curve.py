@@ -10,32 +10,32 @@ from geometry.point import Point2D
 class PolygonalCurve2D(object):
     def __init__(self, points):
         assert len(points) >= 2, 'Need at least 2 points to define a polygonal curve.'
-        self.__points = points
+        self.points = points
 
     def add_point(self, point):
-        return self.__points.append(point)
+        return self.points.append(point)
 
     def get_point(self, i):
-        return self.__points[i] if i < len(self.__points) else None
+        return self.points[i] if i < len(self.points) else None
 
     def get_spine(self):
-        return self.__points[0], self.__points[-1]
+        return self.points[0], self.points[-1]
 
     def size(self):
-        return len(self.__points)
+        return len(self.points)
 
     def left_curve(self):
         median = int(floor(self.size() / 2))
-        return PolygonalCurve2D(self.__points[:median + 1]) if self.size() > 2 else self
+        return PolygonalCurve2D(self.points[:median + 1]) if self.size() > 2 else self
 
     def right_curve(self):
         median = int(floor(self.size() / 2))
-        return PolygonalCurve2D(self.__points[median:]) if self.size() > 2 else self
+        return PolygonalCurve2D(self.points[median:]) if self.size() > 2 else self
 
     def contains(self, edge):
-        p1 = self.__points[0]
+        p1 = self.points[0]
 
-        for point in self.__points[1:]:
+        for point in self.points[1:]:
             p2 = point
             if edge.get_point(0) == p1 and edge.get_point(1) == p2:
                 return True
@@ -52,9 +52,9 @@ class PolygonalCurve2D(object):
     def sub_divide(self, d_t):
         assert d_t > 0, "Distance for line partition must be greater than 0."
         pi = list()
-        p1 = self.__points[0]
+        p1 = self.points[0]
 
-        for point in self.__points[1:]:
+        for point in self.points[1:]:
             p2 = point
             pi += Edge2D(p1, p2).sub_divide(d_t)
             p1 = p2

@@ -41,7 +41,7 @@ class FrechetGrid2D(object):
             if self.__L != 0 else None
         self.grid_v = ExponentialGrid2D(self.__v, error, error * self.__L / 2, self.__L / error) \
             if self.__L != 0 else None
-        self.distances = self.__init_distances(curve)
+        self.distances = self.__init_distances(curve) if self.__L != 0 else None
 
     def approximate_frechet(self, edge):
         p = edge.p1

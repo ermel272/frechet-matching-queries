@@ -17,6 +17,4 @@ class TestCurveRangeTree(unittest.TestCase):
             Point2D(-4.0, 4.0),
             Point2D(-2.0, -1.0)
         ])
-
         tree = CurveRangeTree2D(curve, self.error, self.delta)
-        tree.decompose()

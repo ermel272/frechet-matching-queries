@@ -102,6 +102,13 @@ class Tree(object):
                 node.size = sum(n.size for n in node.children())
             node.ell = int(floor(log(node.size, 2)))
 
+        def create_curve(s):
+            s.insert(0, s[0].parent)
+            curves.append(s)
+
+            for n in s:
+                n.gpar = s[0]
+
         # Step 2: Create tree decomposition while performing DFS
         stack = list()
         last = None
@@ -110,16 +117,15 @@ class Tree(object):
                 last = node
                 continue
             elif len(stack) > 0 and (node.ell != stack[-1].ell or node.parent != last):
-                stack.insert(0, stack[0].parent)
-                curves.append(PolygonalCurve2D(stack))
-
-                for n in stack:
-                    n.gpar = stack[0]
-
+                create_curve(stack)
                 stack = list()
 
             last = node
             stack.append(node)
+
+        # Loop above may terminate without creating the final curve
+        if len(stack) > 0:
+            create_curve(stack)
 
         self.decomposition = curves
         return curves
@@ -179,6 +185,7 @@ class CurveRangeTree2D(Tree):
         self.__error = error
         self.__delta = delta
         super(CurveRangeTree2D, self).__init__(self.__build_tree(curve))
+        self.decompose()
 
     class Node(object):
         def __init__(self, curve, error, parent=None):
