@@ -20,7 +20,3 @@ class TestExponentialGrid(unittest.TestCase):
         # Test for error property
         assert np.linalg.norm(p.v - p_prime.v) <= \
             (self.error / 2) * np.linalg.norm(p.v - u.v)
-
-
-if __name__ == '__main__':
-    unittest.main()

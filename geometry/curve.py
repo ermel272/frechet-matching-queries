@@ -73,7 +73,8 @@ class Edge2D(PolygonalCurve2D):
         self.p2 = p2
 
         # Although this is a line segment, define some line properties
-        self.slope = (self.p1.y - self.p2.y) / (self.p1.x - self.p2.x)
+        slope_den = (self.p1.x - self.p2.x)
+        self.slope = (self.p1.y - self.p2.y) / slope_den if slope_den != 0 else 0
         self.y_int = self.p1.y - (self.slope * self.p1.x)
         self.d = np.linalg.norm(self.p1.v - self.p2.v)
 
