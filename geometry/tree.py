@@ -173,9 +173,9 @@ class FrechetTree(object):
 
 class CurveRangeTree2D(Tree):
     def __init__(self, curve, error, delta):
-        super(CurveRangeTree2D, self).__init__(self.__build_tree(curve))
         self.__error = error
         self.__delta = delta
+        super(CurveRangeTree2D, self).__init__(self.__build_tree(curve))
 
     class Node(object):
         def __init__(self, curve, error, parent=None):
@@ -316,13 +316,14 @@ class CurveRangeTree2D(Tree):
         return subpaths
 
     def __build_tree(self, curve, parent=None):
-        node = self.Node(curve, self.__error / 2, parent)
+        # Note: Not passing error / 2 for performance reasons
+        node = self.Node(curve, self.__error, parent)
 
         if curve.size() == 2:
             return node
 
-        node.left = self.__build_tree(curve.left_curve, node)
-        node.right = self.__build_tree(curve.right_curve, node)
+        node.left = self.__build_tree(curve.left_curve(), node)
+        node.right = self.__build_tree(curve.right_curve(), node)
         return node
 
     def __find_node(self, node, edge):
