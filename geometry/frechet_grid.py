@@ -34,10 +34,13 @@ class FrechetGrid2D(object):
         assert 0 < error <= 1, 'Error rate specified must be greater than 0 and at most 1.'
         self.__u, self.__v = curve.get_spine()
         self.__steiner_curve = curve.get_steiner_curve(STEINER_SPACING)
-        self.__L = self.__init_L(curve)
+        self.__L = discrete_frechet(Edge2D(self.__u, self.__v).get_steiner_curve(STEINER_SPACING),
+                                    curve.get_steiner_curve(STEINER_SPACING))
         self.__error = error
-        self.grid_u = ExponentialGrid2D(self.__u, error, error * self.__L / 2, self.__L / error)
-        self.grid_v = ExponentialGrid2D(self.__v, error, error * self.__L / 2, self.__L / error)
+        self.grid_u = ExponentialGrid2D(self.__u, error, error * self.__L / 2, self.__L / error) \
+            if self.__L != 0 else None
+        self.grid_v = ExponentialGrid2D(self.__v, error, error * self.__L / 2, self.__L / error) \
+            if self.__L != 0 else None
         self.distances = self.__init_distances(curve)
 
     def approximate_frechet(self, edge):
@@ -55,13 +58,7 @@ class FrechetGrid2D(object):
         q_prime = self.grid_v.approximate_point(q)
 
         return self.distances[str(p_prime)][str(q_prime)] - \
-            max(np.linalg.norm(p.v - p_prime.v), np.linalg.norm(q.v - q_prime.v))
-
-    def __init_L(self, curve):
-        distance = discrete_frechet(Edge2D(self.__u, self.__v).get_steiner_curve(STEINER_SPACING),
-                                    curve.get_steiner_curve(STEINER_SPACING))
-
-        return 1 if distance == 0 else distance
+               max(np.linalg.norm(p.v - p_prime.v), np.linalg.norm(q.v - q_prime.v))
 
     def __init_distances(self, curve):
         distances = dict()
