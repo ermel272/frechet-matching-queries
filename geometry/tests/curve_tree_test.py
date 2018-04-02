@@ -19,3 +19,4 @@ class TestCurveRangeTree(unittest.TestCase):
         ])
 
         tree = CurveRangeTree2D(curve, self.error, self.delta)
+        tree.decompose()

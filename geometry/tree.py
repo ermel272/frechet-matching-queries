@@ -58,10 +58,10 @@ class Tree(object):
         stack.append(node)
         while len(stack) > 0:
             nxt = stack.pop()
-            yield nxt
 
             if nxt not in visited:
                 visited.add(nxt)
+                yield nxt
 
                 for future_node in nxt.adjacent_nodes():
                     stack.append(future_node)
@@ -104,10 +104,12 @@ class Tree(object):
 
         # Step 2: Create tree decomposition while performing DFS
         stack = list()
+        last = None
         for node in self.depth_first_search(self.root):
             if node == self.root:
+                last = node
                 continue
-            elif len(stack) > 0 and node.ell != stack[-1].ell:
+            elif len(stack) > 0 and (node.ell != stack[-1].ell or node.parent != last):
                 stack.insert(0, stack[0].parent)
                 curves.append(PolygonalCurve2D(stack))
 
@@ -116,6 +118,7 @@ class Tree(object):
 
                 stack = list()
 
+            last = node
             stack.append(node)
 
         self.decomposition = curves
