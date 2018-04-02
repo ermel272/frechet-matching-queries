@@ -29,13 +29,21 @@ class ExponentialGrid2D(object):
         assert self.__alpha <= np.linalg.norm(point.v - self.center.v) <= self.__beta, \
             'Point given falls outside of the grid.'
 
-        # Compute index of grid containing the point
-        i = int(max(
-            ceil(log(abs(point.x - self.center.x) / self.__alpha, 2) - 1),
-            ceil(log(abs(point.y - self.center.y) / self.__alpha, 2) - 1)
-        ))
+        x_diff = point.x - self.center.x
+        y_diff = point.y - self.center.y
 
-        # FIXME: Logarithm error when point.x/y == self.center.x/y
+        # Compute index of grid containing the point
+        if point == self.center:
+            i = 0
+        elif x_diff == 0 and y_diff != 0:
+            i = int(ceil(log(abs(y_diff) / self.__alpha, 2) - 1))
+        elif y_diff == 0 and x_diff != 0:
+            i = int(ceil(log(abs(x_diff) / self.__alpha, 2) - 1))
+        else:
+            i = int(max(
+                ceil(log(abs(x_diff) / self.__alpha, 2) - 1),
+                ceil(log(abs(y_diff) / self.__alpha, 2) - 1)
+            ))
 
         return self.grids[i].get_cell(point).find_closest(point)
 
