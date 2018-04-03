@@ -47,7 +47,7 @@ class DirectedAcyclicGraph(Graph):
 
         return False
 
-    def bottleneck_path(self, start, end):
+    def bottleneck_path_weight(self, start, end):
         def __compute_bottleneck(start, weight):
             if start == end:
                 return weight

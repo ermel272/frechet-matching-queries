@@ -11,7 +11,7 @@ class TestCurveRangeTree(unittest.TestCase):
         self.error = 1.0
         self.delta = 1.0
 
-    def test_query_small_curve(self):
+    def test_query_trivial_curve(self):
         tree = CurveRangeTree2D(
             PolygonalCurve2D([
                 Point2D(0.0, 0.0),
