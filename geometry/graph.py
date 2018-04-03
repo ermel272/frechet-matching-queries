@@ -4,7 +4,7 @@ class Graph(object):
 
     def add_vertex(self, point):
         if not self.graph.get(str(point)):
-            self.graph[str(point)] = self._AdjacencyContainer()
+            self.graph[str(point)] = self._AdjacencyContainer(point)
             return True
 
         return False
@@ -14,7 +14,8 @@ class Graph(object):
         return self.graph[str(p1)].add(p2, weight)
 
     class _AdjacencyContainer(object):
-        def __init__(self):
+        def __init__(self, origin):
+            self.origin = origin
             self.points = list()
             self.point_set = set()
             self.weights = dict()
@@ -34,7 +35,7 @@ class Graph(object):
 
 class DirectedAcyclicGraph(Graph):
     def __init__(self):
-        super(DirectedAcyclicGraph).__init__()
+        super(DirectedAcyclicGraph, self).__init__()
 
     def add_edge(self, p1, p2, weight=None):
         self.add_vertex(p1)
@@ -52,9 +53,9 @@ class DirectedAcyclicGraph(Graph):
                 return weight
 
             adjacencies = self.graph[str(start)]
-            weight = max([min(adjacencies.weights.values()), weight])
+            weight = max(min(adjacencies.weights.values()), weight)
             for point in adjacencies.points:
-                weight = __compute_bottleneck(point, weight)
+                weight = min(__compute_bottleneck(point, adjacencies.weights[str(point)]), weight)
 
             return weight
 

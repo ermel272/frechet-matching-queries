@@ -230,7 +230,7 @@ class CurveRangeTree2D(Tree):
         pi = q_edge.sub_divide(self.__error * self.__delta / 3)
         for subpath in subpaths[1:]:
             partitions.append(
-                q_edge.partition(
+                Edge2D.partition(
                     pi,
                     subpath.curve.get_point(0),
                     2 * self.__delta
@@ -245,13 +245,17 @@ class CurveRangeTree2D(Tree):
             for u in partitions[i]:
                 for v in partitions[j]:
                     if v.is_on_edge(Edge2D(u, q_edge.p2)):
-                        dag.add_edge(u, v, subpaths[i + 1].grid.approximate_frechet(u, v))
+                        dag.add_edge(u, v, subpaths[i + 1].grid.approximate_frechet(Edge2D(u, v)))
 
         for v in partitions[0]:
-            dag.add_edge(q_edge.p1, v, subpaths[0].grid.approximate_frechet(q_edge.p1, v))
+            if v == q_edge.p1:
+                continue
+            dag.add_edge(q_edge.p1, v, subpaths[0].grid.approximate_frechet(Edge2D(q_edge.p1, v)))
 
         for u in partitions[len(partitions) - 1]:
-            dag.add_edge(u, q_edge.p2, subpaths[len(partitions) - 1].grid.approximate_frechet(u, q_edge.p2))
+            if u == q_edge.p2:
+                continue
+            dag.add_edge(u, q_edge.p2, subpaths[len(partitions) - 1].grid.approximate_frechet(Edge2D(u, q_edge.p2)))
 
         delta_prime = dag.bottleneck_path(q_edge.p1, q_edge.p2)
         return delta_prime <= (1 + self.__error) * self.__delta
@@ -304,7 +308,7 @@ class CurveRangeTree2D(Tree):
                 if node == x_node:
                     node = self.Node(
                         Edge2D(x, node.curve.get_point(1)),
-                        self.__error / 2
+                        self.__error
                     )
 
                 subpaths.append(node)
@@ -316,7 +320,7 @@ class CurveRangeTree2D(Tree):
                 if node == y_node:
                     node = self.Node(
                         Edge2D(node.curve.get_point(0), y),
-                        self.__error / 2
+                        self.__error
                     )
 
                 right_subpaths.append(node)
