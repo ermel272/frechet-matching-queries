@@ -172,12 +172,23 @@ class Tree(object):
 class FrechetTree(object):
     def __init__(self, tree, error, delta):
         self.__error = error
-        self.__delta = error
-        self.paths = tree.decompose()
+        self.__delta = delta
+        self.tree = tree
+        self.tree.decompose()
         self.path_trees = list()
 
-        for path in self.paths:
+        for path in self.tree.decomposition:
             self.path_trees.append(CurveRangeTree2D(path, error, delta))
+
+    def is_approximate(self, q_edge, x, y, x_node, y_node):
+        # Step 1: Use the path decomposition to find O(log n) subpaths from x -> y in the tree
+        lca = self.tree.lowest_common_ancestor(x_node, y_node)
+
+        def find_paths(start, end):
+            pass
+
+        # TODO: Finish this algorithm
+
 
 
 class CurveRangeTree2D(Tree):
