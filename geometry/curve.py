@@ -91,7 +91,7 @@ class Edge2D(PolygonalCurve2D):
         assert d_t > 0, "Distance for line partition must be greater than 0."
         pi = list()
         pi.append(self.p1)
-        curr_t = t = d_t / self.d
+        curr_t = t = d_t / self.d if self.d != 0 else 1
 
         while curr_t < 1:
             pi.append(Point2D(

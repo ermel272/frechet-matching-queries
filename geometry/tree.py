@@ -229,13 +229,14 @@ class CurveRangeTree2D(Tree):
         partitions = list()
         pi = q_edge.sub_divide(self.__error * self.__delta / 3)
         for subpath in subpaths[1:]:
-            partitions.append(
-                Edge2D.partition(
-                    pi,
-                    subpath.curve.get_point(0),
-                    2 * self.__delta
-                )
-            )
+            dag_points = Edge2D.partition(
+                            pi,
+                            subpath.curve.get_point(0),
+                            2 * self.__delta
+                        )
+
+            if len(dag_points) > 0:
+                partitions.append(dag_points)
 
         # Construct the Directed Acyclic Graph
         dag = DirectedAcyclicGraph()
@@ -244,18 +245,24 @@ class CurveRangeTree2D(Tree):
 
             for u in partitions[i]:
                 for v in partitions[j]:
-                    if v.is_on_edge(Edge2D(u, q_edge.p2)):
+                    if u == v:
+                        continue
+                    elif u != q_edge.p2 and v.is_on_edge(Edge2D(u, q_edge.p2)):
                         dag.add_edge(u, v, subpaths[i + 1].grid.approximate_frechet(Edge2D(u, v)))
 
-        for v in partitions[0]:
-            if v == q_edge.p1:
-                continue
-            dag.add_edge(q_edge.p1, v, subpaths[0].grid.approximate_frechet(Edge2D(q_edge.p1, v)))
+        if len(partitions) > 0:
+            for v in partitions[0]:
+                if v == q_edge.p1:
+                    continue
+                dag.add_edge(q_edge.p1, v, subpaths[0].grid.approximate_frechet(Edge2D(q_edge.p1, v)))
 
-        for u in partitions[len(partitions) - 1]:
-            if u == q_edge.p2:
-                continue
-            dag.add_edge(u, q_edge.p2, subpaths[len(partitions) - 1].grid.approximate_frechet(Edge2D(u, q_edge.p2)))
+            for u in partitions[len(partitions) - 1]:
+                if u == q_edge.p2:
+                    continue
+                dag.add_edge(u, q_edge.p2, subpaths[len(partitions) - 1].grid.approximate_frechet(Edge2D(u, q_edge.p2)))
+        else:
+            dag.add_edge(q_edge.p1, q_edge.p2, subpaths[0].grid.approximate_frechet(Edge2D(q_edge.p1, q_edge.p2)))
+            dag.add_edge(q_edge.p1, q_edge.p2, subpaths[len(partitions) - 1].grid.approximate_frechet(Edge2D(q_edge.p1, q_edge.p2)))
 
         delta_prime = dag.bottleneck_path_weight(q_edge.p1, q_edge.p2)
         return delta_prime <= (1 + self.__error) * self.__delta
