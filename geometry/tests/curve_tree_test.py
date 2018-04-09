@@ -61,3 +61,6 @@ class TestCurveRangeTree(unittest.TestCase):
 
         q_edge = Edge2D(Point2D(1.0, 2.5), Point2D(5.0, 2.5))
         assert not tree.is_approximate(q_edge, x, y, x_edge, y_edge)
+
+        q_edge = Edge2D(Point2D(0.0, 0.0), Point2D(5.0, 5.0))
+        assert not tree.is_approximate(q_edge, x, y, x_edge, y_edge)

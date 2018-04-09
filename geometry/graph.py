@@ -49,10 +49,10 @@ class DirectedAcyclicGraph(Graph):
 
     def bottleneck_path_weight(self, start, end):
         def __compute_bottleneck(start, weight):
-            if start == end:
+            adjacencies = self.graph.get(str(start))
+            if start == end or not adjacencies:
                 return weight
 
-            adjacencies = self.graph[str(start)]
             weight = max(min(adjacencies.weights.values()), weight)
             for point in adjacencies.points:
                 weight = min(__compute_bottleneck(point, adjacencies.weights[str(point)]), weight)
