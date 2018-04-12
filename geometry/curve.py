@@ -12,6 +12,13 @@ class PolygonalCurve2D(object):
         assert len(points) >= 2, 'Need at least 2 points to define a polygonal curve.'
         self.points = points
 
+    def __str__(self):
+        point_str = '{}'.format(str(self.points[0]))
+        for point in self.points[1:]:
+            point_str += ', {}'.format(str(point))
+
+        return "[{}]".format(point_str)
+
     def add_point(self, point):
         return self.points.append(point)
 

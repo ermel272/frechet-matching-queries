@@ -11,12 +11,13 @@ class Tree(object):
         self.decomposition = None
 
     class Node(object):
-        def __init__(self, data, parent=None):
+        def __init__(self, point, parent=None):
             self.parent = parent
-            self.data = data
+            self.point = point
             self.left_child = None
             self.right_sibling = None
             self.gpar = None
+            self.decomp_curves = list()
 
         def is_leaf(self):
             return True if not self.left_child else False
@@ -91,7 +92,7 @@ class Tree(object):
         return
         yield
 
-    def decompose(self):
+    def decompose(self, embedded_nodes=False):
         curves = list()
 
         # Step 1: Compute size & magnitude of each subtree
@@ -104,7 +105,16 @@ class Tree(object):
 
         def create_curve(s):
             s.insert(0, s[0].parent)
-            curves.append(s)
+
+            if embedded_nodes:
+                curve = PolygonalCurve2D([n.point for n in s])
+                curves.append(curve)
+
+                # Fix a pointer to the curve for each node in the stack
+                for n in s:
+                    n.decomp_curves.append(curve)
+            else:
+                curves.append(s)
 
             for n in s:
                 n.gpar = s[0]
@@ -118,6 +128,7 @@ class Tree(object):
                 continue
             elif len(stack) > 0 and (node.ell != stack[-1].ell or node.parent != last):
                 create_curve(stack)
+
                 stack = list()
 
             last = node
@@ -173,11 +184,60 @@ class FrechetTree(object):
     def __init__(self, tree, error, delta):
         self.__error = error
         self.__delta = error
-        self.paths = tree.decompose()
-        self.path_trees = list()
+        self.tree = tree
+        self.path_trees = dict()
 
-        for path in self.paths:
-            self.path_trees.append(CurveRangeTree2D(path, error, delta))
+        self.tree.decompose(embedded_nodes=True)
+        for path in self.tree.decomposition:
+            self.path_trees[str(path)] = CurveRangeTree2D(path, error, delta)
+
+    def is_approximate(self, q_edge, x, y, x_node, y_node):
+        # Assume tree node data stores Point2D objects
+        x_edge = Edge2D(x_node.point, x_node.parent.point)
+        y_edge = Edge2D(y_node.point, y_node.parent.point)
+
+        lca = self.tree.lowest_common_ancestor(x_node, y_node)
+        paths = self.__find_decomposed_curves(x_node, lca) + self.__find_decomposed_curves(y_node, lca)[::-1]
+
+        subpaths = list()
+        for i in range(0, len(paths)):
+            path = paths[i]
+            curve_tree = self.path_trees.get(str(path))
+
+            end = path.get_point(-1)
+            if i == 0:
+                subpaths += curve_tree.partition_path(x, end, x_edge, Edge2D(path.get_point(-2), end))
+            elif i == len(paths) - 1:
+                subpaths += curve_tree.partition_path(y, end, y_edge, Edge2D(path.get_point(-2), end))
+            else:
+                start = path.get_point(0)
+                subpaths += curve_tree.partition_path(start, end,
+                                                      Edge2D(start, path.get_point(1)), Edge2D(path.get_point(-2), end))
+
+        return self.path_trees.values()[0].find_frechet_bottleneck(q_edge, subpaths)
+
+    @staticmethod
+    def __find_decomposed_curves(start, end):
+        paths = list()
+
+        searching = True
+        stack = list()
+        prev = None
+        curr = start
+        while searching:
+            if curr == end:
+                searching = False
+
+            stack.append(curr)
+
+            if prev and prev.gpar == curr:
+                paths.append(PolygonalCurve2D([n.point for n in stack]))
+                stack = [curr]
+
+            prev = curr
+            curr = curr.parent
+
+        return paths
 
 
 class CurveRangeTree2D(Tree):
@@ -195,6 +255,7 @@ class CurveRangeTree2D(Tree):
             self.right = None
             self.grid = FrechetGrid2D(curve, error)
             self.gpar = None
+            self.point = None
 
         def is_leaf(self):
             return True if not (self.left or self.right) else False
@@ -223,22 +284,26 @@ class CurveRangeTree2D(Tree):
 
     def is_approximate(self, q_edge, x, y, x_edge, y_edge):
         # Step 1: Partition path in O(log n) subpaths
-        subpaths = self.__partition_path(x, y, x_edge, y_edge)
+        subpaths = self.partition_path(x, y, x_edge, y_edge)
 
+        # Refactored for reusability
+        return self.find_frechet_bottleneck(q_edge, subpaths)
+
+    def find_frechet_bottleneck(self, q_edge, subpaths):
         # Step 2: Partition q_edge and compute partitioning point sets
         partitions = list()
         pi = q_edge.sub_divide(self.__error * self.__delta / 3)
         for subpath in subpaths[1:]:
             dag_points = Edge2D.partition(
-                            pi,
-                            subpath.curve.get_point(0),
-                            2 * self.__delta
-                        )
+                pi,
+                subpath.curve.get_point(0),
+                2 * self.__delta
+            )
 
             if len(dag_points) > 0:
                 partitions.append(dag_points)
 
-        # Construct the Directed Acyclic Graph
+        # Step 3: Construct the Directed Acyclic Graph
         dag = DirectedAcyclicGraph()
         for i in range(0, len(partitions) - 1):
             j = i + 1
@@ -249,7 +314,6 @@ class CurveRangeTree2D(Tree):
                         continue
                     elif u != q_edge.p2 and v.is_on_edge(Edge2D(u, q_edge.p2)):
                         dag.add_edge(u, v, subpaths[i + 1].grid.approximate_frechet(Edge2D(u, v)))
-
         if len(partitions) > 0:
             for v in partitions[0]:
                 if v == q_edge.p1:
@@ -262,13 +326,15 @@ class CurveRangeTree2D(Tree):
                 dag.add_edge(u, q_edge.p2, subpaths[len(partitions) - 1].grid.approximate_frechet(Edge2D(u, q_edge.p2)))
         else:
             dag.add_edge(q_edge.p1, q_edge.p2, subpaths[0].grid.approximate_frechet(Edge2D(q_edge.p1, q_edge.p2)))
-            dag.add_edge(q_edge.p1, q_edge.p2, subpaths[len(partitions) - 1].grid.approximate_frechet(Edge2D(q_edge.p1, q_edge.p2)))
+            dag.add_edge(q_edge.p1, q_edge.p2,
+                         subpaths[len(partitions) - 1].grid.approximate_frechet(Edge2D(q_edge.p1, q_edge.p2)))
 
+        # Step 4: Find the heaviest weighted edge on the bottleneck path of the DAG
         delta_prime = dag.bottleneck_path_weight(q_edge.p1, q_edge.p2)
         return delta_prime <= (1 + self.__error) * self.__delta
 
     # noinspection PyUnreachableCode
-    def __partition_path(self, x, y, x_edge, y_edge):
+    def partition_path(self, x, y, x_edge, y_edge):
         # Assumes x located on the left side of the path w.r.t. y
         x_node = self.__find_node(self.root, x_edge)
         y_node = self.__find_node(self.root, y_edge)

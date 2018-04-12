@@ -22,6 +22,7 @@ class TestCurveRangeTree(unittest.TestCase):
 
         # Create query parameters
         q_edge = Edge2D(Point2D(0.0, -1.0), Point2D(3.0, -1.0))
+        print(str(q_edge))
         x = Point2D(0.25, 0.0)
         x_edge = Edge2D(Point2D(0.0, 0.0), Point2D(3.0, 0.0))
         y = Point2D(3.0, 2.5)
