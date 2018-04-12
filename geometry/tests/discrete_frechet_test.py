@@ -2,10 +2,10 @@ import unittest
 from random import randint
 
 import numpy as np
+from geometry.data_structures.curve import PolygonalCurve2D, Edge2D
 
-from geometry.curve import PolygonalCurve2D, Edge2D
-from geometry.frechet_distance import discrete_frechet
-from geometry.point import Point2D
+from geometry.algorithms.frechet_distance import discrete_frechet
+from geometry.data_structures.point import Point2D
 
 
 class TestDiscreteFrechet(unittest.TestCase):

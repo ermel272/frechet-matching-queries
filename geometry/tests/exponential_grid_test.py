@@ -1,10 +1,11 @@
 from __future__ import division
+
 import unittest
 
 import numpy as np
+from geometry.data_structures.point import Point2D
 
-from geometry.exponential_grid import ExponentialGrid2D
-from geometry.point import Point2D
+from geometry.data_structures.exponential_grid import ExponentialGrid2D
 
 
 class TestExponentialGrid(unittest.TestCase):

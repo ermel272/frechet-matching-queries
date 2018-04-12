@@ -1,8 +1,10 @@
 from __future__ import division
-import numpy as np
+
 from math import ceil, log, sqrt
 
-from geometry.point import Point2D
+import numpy as np
+
+from geometry.data_structures.point import Point2D
 
 
 class ExponentialGrid2D(object):

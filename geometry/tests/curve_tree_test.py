@@ -1,8 +1,9 @@
 import unittest
 
-from geometry.curve import PolygonalCurve2D, Edge2D
-from geometry.point import Point2D
-from geometry.tree import CurveRangeTree2D
+from geometry.data_structures.curve import PolygonalCurve2D, Edge2D
+from geometry.data_structures.tree import CurveRangeTree2D
+
+from geometry.data_structures.point import Point2D
 
 
 class TestCurveRangeTree(unittest.TestCase):

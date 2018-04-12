@@ -4,7 +4,7 @@ from math import floor
 
 import numpy as np
 
-from geometry.point import Point2D
+from geometry.data_structures.point import Point2D
 
 
 class PolygonalCurve2D(object):

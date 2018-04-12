@@ -1,10 +1,11 @@
 import unittest
 
+from geometry.data_structures.curve import PolygonalCurve2D, Edge2D
+from geometry.data_structures.point import Point2D
+
 from geometry import STEINER_SPACING
-from geometry.curve import PolygonalCurve2D, Edge2D
-from geometry.frechet_distance import discrete_frechet
-from geometry.frechet_grid import FrechetGrid2D
-from geometry.point import Point2D
+from geometry.algorithms.frechet_distance import discrete_frechet
+from geometry.data_structures.frechet_grid import FrechetGrid2D
 
 
 class TestFrechetGrid(unittest.TestCase):

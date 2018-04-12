@@ -1,8 +1,9 @@
 from math import floor, log
 
-from geometry.curve import PolygonalCurve2D, Edge2D
-from geometry.frechet_grid import FrechetGrid2D
-from geometry.graph import DirectedAcyclicGraph
+from geometry.data_structures.curve import PolygonalCurve2D, Edge2D
+from geometry.data_structures.graph import DirectedAcyclicGraph
+
+from geometry.data_structures.frechet_grid import FrechetGrid2D
 
 
 class Tree(object):

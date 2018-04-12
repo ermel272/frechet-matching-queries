@@ -1,10 +1,11 @@
 from __future__ import division
+
 import numpy as np
+from geometry.data_structures.curve import Edge2D
 
 from geometry import STEINER_SPACING
-from geometry.curve import Edge2D
-from geometry.exponential_grid import ExponentialGrid2D
-from geometry.frechet_distance import discrete_frechet
+from geometry.algorithms.frechet_distance import discrete_frechet
+from geometry.data_structures.exponential_grid import ExponentialGrid2D
 
 
 class FrechetGrid2D(object):
