@@ -183,7 +183,7 @@ class Tree(object):
 class FrechetTree(object):
     def __init__(self, tree, error, delta):
         self.__error = error
-        self.__delta = error
+        self.__delta = delta
         self.tree = tree
         self.path_trees = dict()
 
