@@ -2,8 +2,8 @@ from geometry.data_structures.tree import Tree
 from geometry.data_structures.point import Point2D
 
 
-def create_tree(dict):
-    root = Tree.Node(Point2D(dict['root']['x'], dict['root']['x']))
+def create_tree(json):
+    root = Tree.Node(Point2D(json['root']['x'], json['root']['x']))
 
     def create_children(children, parent):
         prev = None
@@ -21,5 +21,5 @@ def create_tree(dict):
 
         return first
 
-    root.left_child = create_children(dict['root']['children'], root)
+    root.left_child = create_children(json['root']['children'], root)
     return Tree(root=root)
