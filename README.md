@@ -13,4 +13,6 @@ preprocess it such that, given a polygonal query path P, we can efficiently dete
 P' such that δ<sub>F</sub>(P, P') ≤ 3(1 + ε)Δ, where Δ and ε are predetermined constants. Please see below for
 a visual example of such a query.
 
-![query_example]
+<p align="center">
+    <img src='query_example.png' />
+</p>
