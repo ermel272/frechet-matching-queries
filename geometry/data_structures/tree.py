@@ -315,6 +315,7 @@ class CurveRangeTree2D(Tree):
                         continue
                     elif u != q_edge.p2 and v.is_on_edge(Edge2D(u, q_edge.p2)):
                         dag.add_edge(u, v, subpaths[i + 1].grid.approximate_frechet(Edge2D(u, v)))
+
         if len(partitions) > 0:
             for v in partitions[0]:
                 if v == q_edge.p1:

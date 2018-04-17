@@ -55,7 +55,7 @@ class DirectedAcyclicGraph(Graph):
 
             weight = max(min(adjacencies.weights.values()), weight)
             for point in adjacencies.points:
-                weight = min(__compute_bottleneck(point, adjacencies.weights[str(point)]), weight)
+                weight = min(__compute_bottleneck(point, weight), weight)
 
             return weight
 
