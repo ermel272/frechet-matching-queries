@@ -65,3 +65,27 @@ class TestCurveRangeTree(unittest.TestCase):
 
         q_edge = Edge2D(Point2D(0.0, 0.0), Point2D(5.0, 5.0))
         assert not tree.is_approximate(q_edge, x, y, x_edge, y_edge)
+
+    def test_small_float_values(self):
+        tree = CurveRangeTree2D(
+            PolygonalCurve2D([
+                Point2D(0.0, 0.0),
+                Point2D(1.0, 0.0),
+                Point2D(0.0, -0.01),
+                Point2D(1.0, -0.01),
+                Point2D(0.0, -0.02),
+                Point2D(1.0, -0.02)
+            ]),
+            self.error, 0.55)
+
+        # Create query parameters
+        q_edge = Edge2D(Point2D(0.0, 0.0), Point2D(1.0, -0.02))
+        x = Point2D(0.0, 0.0)
+        x_edge = Edge2D(Point2D(0.0, 0.0), Point2D(1.0, 0.0))
+        y = Point2D(1.0, -0.02)
+        y_edge = Edge2D(Point2D(0.0, -0.02), Point2D(1.0, -0.02))
+
+        assert tree.is_approximate(q_edge, x, y, x_edge, y_edge)
+
+        q_edge = Edge2D(Point2D(2.2, 0.0), Point2D(2.2, -0.02))
+        assert not tree.is_approximate(q_edge, x, y, x_edge, y_edge)
